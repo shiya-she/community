@@ -5,7 +5,7 @@ target/
 **/src/test/**
 mvnw
 mvnw.cmd
-
+.gitignore
 ### STS ###
 .apt_generated
 .classpath
