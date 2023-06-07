@@ -7,10 +7,8 @@ import com.nowcoder.community.util.CommunityConstants;
 import com.nowcoder.community.util.CommunityUtil;
 import com.nowcoder.community.util.MailClient;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.context.Context;
+
 
 import java.util.Date;
 import java.util.HashMap;
@@ -20,17 +18,13 @@ import java.util.Map;
 public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final MailClient mailClient;
-    private final TemplateEngine templateEngine;
 
-    @Value("${community.path.domain}")
-    private String demain;
-    @Value("${server.servlet.context-path}")
-    private String contextPath;
 
-    public UserServiceImpl(UserMapper userMapper, MailClient mailClient, TemplateEngine templateEngine) {
+
+    public UserServiceImpl(UserMapper userMapper, MailClient mailClient) {
         this.userMapper = userMapper;
         this.mailClient = mailClient;
-        this.templateEngine = templateEngine;
+
     }
 
     @Override
@@ -68,6 +62,10 @@ public class UserServiceImpl implements UserService {
             map.put("emailMsg", "邮箱已被注册！");
             return map;
         }
+        if (!mailClient.checkMail(user)) {
+            map.put("emailMsg", "邮箱不存在请检查你的邮箱！");
+            return map;
+        }
         //注册用户
         user.setSalt(CommunityUtil.generateUUID().substring(0, 5));
         user.setPassword(CommunityUtil.md5(user.getPassword() + user.getSalt()));
@@ -77,19 +75,6 @@ public class UserServiceImpl implements UserService {
         user.setHeaderUrl(String.format("http://image.newcoder.com/head/%dt.png", CommunityConstants.RANDOM.nextInt(1000)));
         user.setCreateTime(new Date());
         userMapper.insertUser(user);
-        //激活邮件
-        Context context = new Context();
-        context.setVariable("email", user.getEmail());
-        //http://localhost:8080/community/activation/101/code
-        String url = new StringBuilder()
-                .append(demain)
-                .append(contextPath)
-                .append("/activation/")
-                .append(user.getId())
-                .append(user.getActivationCode()).toString();
-        context.setVariable("url", url);
-        String content = templateEngine.process("/mail/activation", context);
-        mailClient.sendMail(user.getEmail(), "激活账号", content);
         return map;
     }
 
