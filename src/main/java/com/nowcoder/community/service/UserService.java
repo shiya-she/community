@@ -11,4 +11,11 @@ public interface UserService {
     Map<String, Object> register(User user);
 
     int activation(int userId, String code);
+
+
+    Map<String, Object> login(User user, int expiredSeconds);
+
+    void logout(String ticket);
+
+    boolean checkLoginStatus(String ticket);
 }
