@@ -44,12 +44,15 @@ public class LoginController {
     }
 
     @GetMapping(path = "/login")
-    public String getLoginPage(@CookieValue("ticket") String ticket, Model model) {
-        if (userService.checkLoginStatus(ticket)) {
-            model.addAttribute("msg", "您已经登录了，请不要重复登录！");
-            model.addAttribute("target", "/index");
-            return "/site/operate-result";
-        }
+    public String getLoginPage(@CookieValue(name = "ticket", required = false, defaultValue = "") String ticket, Model model) {
+//        if (StringUtils.isBlank(ticket)) {
+//            return "/site/login";
+//        }
+//        if (userService.checkLoginStatus(ticket)) {
+//            model.addAttribute("msg", "您已经登录了，请不要重复登录！");
+//            model.addAttribute("target", "/index");
+//            return "/site/operate-result";
+//        }
         return "/site/login";
     }
 

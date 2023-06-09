@@ -72,7 +72,7 @@ public class UserServiceImpl implements UserService {
         user.setStatus(0);
         user.setType(0);
         user.setActivationCode(CommunityUtil.generateUUID());
-        user.setHeaderUrl(String.format("http://image.newcoder.com/head/%dt.png", CommunityConstants.RANDOM.nextInt(1000)));
+        user.setHeaderUrl(String.format("http://images.nowcoder.com/head/%dt.png", CommunityConstants.RANDOM.nextInt(1000)));
         user.setCreateTime(new Date());
         userMapper.insertUser(user);
         return map;
@@ -145,6 +145,11 @@ public class UserServiceImpl implements UserService {
     public boolean checkLoginStatus(String ticket) {
         LoginTicket loginTicket = loginTicketMapper.selectByTicket(ticket);
         return loginTicket == null || loginTicket.getStatus() == 1 || loginTicket.getExpired().before(new Date());
+    }
+
+    @Override
+    public LoginTicket findLoginTicket(String ticket) {
+        return loginTicketMapper.selectByTicket(ticket);
     }
 
 }

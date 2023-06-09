@@ -1,12 +1,18 @@
 package com.nowcoder.community.service;
 
+
+import com.nowcoder.community.entity.LoginTicket;
 import com.nowcoder.community.entity.User;
+
 
 import java.util.Map;
 
 public interface UserService {
-    User findUserById(int id);
 
+
+
+
+    User findUserById(int id);
 
     Map<String, Object> register(User user);
 
@@ -18,4 +24,8 @@ public interface UserService {
     void logout(String ticket);
 
     boolean checkLoginStatus(String ticket);
+
+    LoginTicket findLoginTicket(String ticket) ;
+
+
 }
