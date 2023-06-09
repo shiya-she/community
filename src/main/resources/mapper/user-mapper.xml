@@ -30,7 +30,7 @@
         update user
         set status  =#{status} where id=#{id}
     </update>
-    <update id="updateHeaders">
+    <update id="updateHeader">
         update user
         set header_url =#{headerUrl} where id=#{id}
     </update>
