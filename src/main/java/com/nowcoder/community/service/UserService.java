@@ -29,4 +29,9 @@ public interface UserService {
 
 
     int updateHeader(int userId, String headerUrl);
+
+
+    Map<String, Object> updatePassword(String oldPassword, String newPassword, User user);
+
+
 }

@@ -151,8 +151,36 @@ public class UserServiceImpl implements UserService {
     public LoginTicket findLoginTicket(String ticket) {
         return loginTicketMapper.selectByTicket(ticket);
     }
+
     @Override
-    public  int updateHeader(int userId,String headerUrl){
-        return userMapper.updateHeader(userId,headerUrl);
+    public int updateHeader(int userId, String headerUrl) {
+        return userMapper.updateHeader(userId, headerUrl);
     }
+
+    @Override
+    public Map<String, Object> updatePassword(String oldPassword, String newPassword, User user) {
+        Map<String, Object> map = new HashMap<>();
+        if (StringUtils.isBlank(oldPassword)) {
+            map.put("oldPasswordMsg", "旧密码不能为空!");
+            return map;
+        }
+        if (StringUtils.isBlank(newPassword)) {
+            map.put("newPasswordMsg", "新密码不能为空！");
+            return map;
+        }
+        oldPassword = CommunityUtil.md5(oldPassword + user.getSalt());
+        newPassword = CommunityUtil.md5(newPassword + user.getSalt());
+        if (!StringUtils.equals(user.getPassword(), oldPassword)) {
+            map.put("oldPasswordMsg", "旧密码错误!");
+            return map;
+        }
+        if (StringUtils.equals(oldPassword, newPassword)) {
+            map.put("newPasswordMsg", "新密码不能与旧密码相同");
+            return map;
+        }
+        userMapper.updatePassword(user.getId(), newPassword);
+        return map;
+    }
+
+
 }

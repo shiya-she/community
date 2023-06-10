@@ -1,5 +1,6 @@
 package com.nowcoder.community.controller;
 
+import com.nowcoder.community.annotation.LoginRequired;
 import com.nowcoder.community.entity.User;
 import com.nowcoder.community.service.UserService;
 import com.nowcoder.community.util.CommunityUtil;
@@ -11,15 +12,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.multipart.MultipartFile;
 
-
 import java.io.File;
-
 import java.io.IOException;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -40,12 +39,12 @@ public class UserController {
         this.userService = userService;
         this.hostHolder = hostHolder;
     }
-
+    @LoginRequired
     @GetMapping(path = "/setting")
     public String getSettingPage() {
         return "/site/setting";
     }
-
+    @LoginRequired
     @PostMapping(path = "/upload")
     public String uploadHandler(MultipartFile headerImage, Model model) {
         if (headerImage == null) {
@@ -64,7 +63,7 @@ public class UserController {
         //生成随机文件名
         filename = CommunityUtil.generateUUID() + suffix;
         //确定文件存放的路径
-        File file = new File(uploadPath  + filename);
+        File file = new File(uploadPath + filename);
         try {
             headerImage.transferTo(file);
         } catch (IOException e) {
@@ -78,8 +77,26 @@ public class UserController {
         userService.updateHeader(user.getId(), header);
         return "redirect:/index";
     }
-
-
+    @LoginRequired
+    @PostMapping(path = "/changePassword")
+    public String changePassword(String oldPassword, String newPassword, Model model) {
+        if (StringUtils.equals(oldPassword, newPassword)) {
+            model.addAttribute("newPasswordMsg", "新密码不能与旧密码相同！");
+                return "/site/setting";
+        }
+        User user = hostHolder.getUser();
+        if(user==null){
+            model.addAttribute("msg", "您还未登录！");
+            model.addAttribute("target", "/index");
+            return "/site/operate-result";
+        }
+        Map<String, Object> map = userService.updatePassword(oldPassword, newPassword, user);
+        if (!map.isEmpty()) {
+            model.addAllAttributes(map);
+            return "/site/setting";
+        }
+        return "redirect:/logout";
+    }
 }
 
 
