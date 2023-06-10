@@ -1,6 +1,7 @@
 package com.nowcoder.community.controller;
 
 import com.google.code.kaptcha.Producer;
+import com.nowcoder.community.annotation.LoginRequired;
 import com.nowcoder.community.entity.User;
 import com.nowcoder.community.service.UserService;
 import com.nowcoder.community.util.CommunityConstants;
@@ -45,14 +46,6 @@ public class LoginController {
 
     @GetMapping(path = "/login")
     public String getLoginPage(@CookieValue(name = "ticket", required = false, defaultValue = "") String ticket, Model model) {
-//        if (StringUtils.isBlank(ticket)) {
-//            return "/site/login";
-//        }
-//        if (userService.checkLoginStatus(ticket)) {
-//            model.addAttribute("msg", "您已经登录了，请不要重复登录！");
-//            model.addAttribute("target", "/index");
-//            return "/site/operate-result";
-//        }
         return "/site/login";
     }
 
@@ -131,7 +124,7 @@ public class LoginController {
             return "/site/login";
         }
     }
-
+    @LoginRequired
     @GetMapping(path = "/logout")
     public String logout(@CookieValue("ticket") String ticket) {
         userService.logout(ticket);
