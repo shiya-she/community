@@ -16,15 +16,21 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ *@author sc
+ *@date 2023-06-11 21:27:35
+ */
 
 @Component
 public class SensitiveFilter {
     private static final Logger logger = LoggerFactory.getLogger(SensitiveFilter.class);
-    //替换符
+    /**
+     * description:替换符
+     */
     private  static final String  REPLACEMENT ="**";
 
     //根节点
-    private TrieNode rootNode=new TrieNode();
+    private final  TrieNode rootNode=new TrieNode();
     @PostConstruct
     public  void init() {
         try (InputStream is = this.getClass().getClassLoader().getResourceAsStream("sensitive-words.txt");

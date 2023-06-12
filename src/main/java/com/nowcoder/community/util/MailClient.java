@@ -58,12 +58,11 @@ public class MailClient {
         Context context = new Context();
         context.setVariable("email", user.getEmail());
         //http://localhost:8080/community/activation/101/code
-        String url = new StringBuilder()
-                .append(demain)
-                .append(contextPath)
-                .append("/activation/")
-                .append(user.getId())
-                .append(user.getActivationCode()).toString();
+        String url = demain +
+                contextPath +
+                "/activation/" +
+                user.getId() +
+                user.getActivationCode();
         context.setVariable("url", url);
         String content = templateEngine.process("/mail/activation", context);
         return sendMail(user.getEmail(), "激活账号", content);

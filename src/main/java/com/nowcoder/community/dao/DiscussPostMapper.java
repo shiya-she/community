@@ -13,5 +13,6 @@ public interface DiscussPostMapper {
     //如果只有一个参数，并且在<if>里使用，则必须使用
     Integer selectDiscussPostRows(@Param("userId") int userId);
 
+    int insertDiscussPost(DiscussPost discussionPost);
 
 }
