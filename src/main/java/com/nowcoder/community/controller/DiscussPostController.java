@@ -4,12 +4,12 @@ import com.nowcoder.community.entity.DiscussPost;
 import com.nowcoder.community.entity.User;
 import com.nowcoder.community.service.DiscussPostService;
 
+import com.nowcoder.community.service.UserService;
 import com.nowcoder.community.util.CommunityUtil;
 import com.nowcoder.community.util.HostHolder;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 
@@ -22,10 +22,12 @@ import java.util.Date;
 public class DiscussPostController {
     private final DiscussPostService discussPostsService;
     private final HostHolder hostHolder;
+    private final UserService userService;
 
-    public DiscussPostController(DiscussPostService discussPostsService, HostHolder hostHolder) {
+    public DiscussPostController(DiscussPostService discussPostsService, HostHolder hostHolder, UserService userService) {
         this.discussPostsService = discussPostsService;
         this.hostHolder = hostHolder;
+        this.userService = userService;
     }
 
     @PostMapping(path = {"/add"})
@@ -42,7 +44,17 @@ public class DiscussPostController {
         post.setCreateTime(new Date());
         discussPostsService.addDiscussPost(post);
         //TODO 报错情况统一处理
-        return CommunityUtil.getJSONString(0,"发布成功");
+        return CommunityUtil.getJSONString(0, "发布成功");
     }
 
+    @GetMapping(path = "/detail/{discussPostId}")
+    public String getDiscussionPost(@PathVariable("discussPostId") int discussionPostId, Model model) {
+        //帖子
+        DiscussPost post = discussPostsService.findDiscussPostById(discussionPostId);
+        model.addAttribute("post", post);
+        //作者
+        User user = userService.findUserById(post.getUserId());
+        model.addAttribute("user", user);
+        return "/site/discuss-detail";
+    }
 }
