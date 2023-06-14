@@ -12,7 +12,7 @@ import java.util.List;
 @Service
 public class DiscussPostServiceImpl implements DiscussPostService {
     private final DiscussPostMapper discussPostMapper;
-    private  final SensitiveFilter sensitiveFilter;
+    private final SensitiveFilter sensitiveFilter;
 
     public DiscussPostServiceImpl(DiscussPostMapper discussPostMapper, SensitiveFilter sensitiveFilter) {
         this.discussPostMapper = discussPostMapper;
@@ -43,10 +43,14 @@ public class DiscussPostServiceImpl implements DiscussPostService {
         discussPost.setContent(sensitiveFilter.filter(discussPost.getContent()));
         return discussPostMapper.insertDiscussPost(discussPost);
     }
+
     @Override
-    public  DiscussPost findDiscussPostById(int id){
+    public DiscussPost findDiscussPostById(int id) {
         return discussPostMapper.selectDiscussPostById(id);
     }
-
+    @Override
+    public int updateCommentCount(int id, int commentCount) {
+        return discussPostMapper.updateCommentCount(id, commentCount);
+    }
 
 }
