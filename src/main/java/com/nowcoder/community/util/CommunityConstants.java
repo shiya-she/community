@@ -45,4 +45,13 @@ public class CommunityConstants {
      * 记住状态的登录凭证超时时间
      */
     public static final int REMEMBER_EXPIRED_SECONDS = 60 * 60 * 24 * 10;
+    /**
+     * 实体类型:帖子
+     */
+
+    public static final int ENTITY_TYPE_POST = 1;
+    /**
+     * 实体类型:评论
+     */
+    public static final int ENTITY_TYPE_COMMENT = 2;
 }

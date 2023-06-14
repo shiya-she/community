@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 
 import java.util.*;
+
 import java.util.stream.Collectors;
 
 @Controller
@@ -29,21 +30,17 @@ public class HomeController {
         page.setRows(discussPostService.findDiscussPostRows(0));
         page.setPath("/index");
         List<DiscussPost> list = discussPostService.findDiscussPosts(0, page.getOffset(), page.getLimit());
-//      创建一个Optional解决list空指针异常问题
-        Optional<List<DiscussPost>> optional = Optional.ofNullable(list);
-//      optional.map(....).ofElse(Collections.emptyList()list 不为空执行map() 结果为 List<Map<String, Object>> 否则为空的List
-//      post.stream()... 对list执行流式操作 。map()  DiscussPost流 转为 HashMap流
-//      .collect(Collectors.toList())将stream 流转为 list
-        List<Map<String, Object>> discussPosts = optional.map(posts -> posts.stream()
-                        .map(post -> {
-                            Map<String, Object> map = new HashMap<>();
-                            map.put("post", post);
-                            map.put("user", userService.findUserById(post.getUserId()));
-                            return map;
-                        })
-                        .collect(Collectors.toList()))
-                .orElse(Collections.emptyList());
-        model.addAttribute("discussPosts", discussPosts);
+//      创建一个Optional解决list可能为null
+        list = Optional.ofNullable(list).orElse(Collections.emptyList());
+        List<Map<String, Object>> maps = list.stream().map(discussPost -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("post", discussPost);
+            map.put("user", userService.findUserById(discussPost.getUserId()));
+            return map;
+        }).collect(Collectors.toList());
+
+//
+        model.addAttribute("discussPosts", maps);
 
         return "/index";
     }

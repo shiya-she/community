@@ -77,6 +77,7 @@ public class UserController {
         userService.updateHeader(user.getId(), header);
         return "redirect:/index";
     }
+
     @LoginRequired
     @PostMapping(path = "/changePassword")
     public String changePassword(String oldPassword, String newPassword, Model model) {
