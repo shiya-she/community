@@ -34,4 +34,5 @@ public interface UserService {
     Map<String, Object> updatePassword(String oldPassword, String newPassword, User user);
 
 
+    User findUserByName(String name);
 }

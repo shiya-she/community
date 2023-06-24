@@ -5,18 +5,14 @@ import com.nowcoder.community.entity.Page;
 import com.nowcoder.community.entity.User;
 import com.nowcoder.community.service.MessageService;
 import com.nowcoder.community.service.UserService;
+import com.nowcoder.community.util.CommunityUtil;
 import com.nowcoder.community.util.HostHolder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -60,10 +56,10 @@ public class MessageController {
     @GetMapping(path = "/detail/{conversationId}")
     public String getLetterDetail(@PathVariable("conversationId") String conversationId, Model model, Page page) {
         page.setLimit(5);
-        page.setPath("/letter/detail/"+conversationId);
+        page.setPath("/letter/detail/" + conversationId);
         page.setRows(messageService.findLetterCount(conversationId));
-        List<Message> letterlist = messageService.findLetters(conversationId, page.getOffset(), page.getLimit());
-        List<Object> letters = Optional.ofNullable(letterlist)
+        List<Message> letterList = messageService.findLetters(conversationId, page.getOffset(), page.getLimit());
+        List<Object> letters = Optional.ofNullable(letterList)
                 .stream()
                 .flatMap(List::stream)
                 .map(message -> {
@@ -73,8 +69,22 @@ public class MessageController {
                     return map;
                 }).collect(Collectors.toList());
         model.addAttribute("letters", letters);
-        model.addAttribute("target",getLetterTarget(conversationId));
+        model.addAttribute("target", getLetterTarget(conversationId));
+
+        List<Integer> ids = getLetterIds(letterList);
+
+        Optional.ofNullable(ids)
+                .filter(list -> !list.isEmpty())
+                .ifPresent(messageService::readMessage);
         return "/site/letter-detail";
+    }
+
+    private List<Integer> getLetterIds(List<Message> letterList) {
+        return Optional.ofNullable(letterList).stream()
+                .flatMap(List::stream)
+                .filter(message -> hostHolder.getUser().getId() == message.getToId() && message.getStatus() == 0)
+                .map(Message::getId)
+                .collect(Collectors.toList());
     }
 
     private User getLetterTarget(String conversationId) {
@@ -82,8 +92,29 @@ public class MessageController {
         int i = Integer.parseInt(ids[0]);
         int j = Integer.parseInt(ids[1]);
         if (hostHolder.getUser().getId() == i) {
-            return userService.findUserById(i);
+            return userService.findUserById(j);
         }
-        return userService.findUserById(j);
+        return userService.findUserById(i);
+    }
+
+    @PostMapping(path = "/send")
+    @ResponseBody
+    public String sendLetter(String toName, String content) {
+        User target = userService.findUserByName(toName);
+        if (target == null) {
+            return CommunityUtil.getJSONString(1, "目标用户不存在！");
+        }
+        Message message = new Message();
+        message.setFromId(hostHolder.getUser().getId());
+        message.setToId(target.getId());
+        if (message.getFromId() < message.getToId()) {
+            message.setConversationId(message.getFromId() + "_" + message.getToId());
+        } else {
+            message.setConversationId(message.getToId() + "_" + message.getFromId());
+        }
+        message.setContent(content);
+        message.setCreateTime(new Date());
+        messageService.addNessage(message);
+        return CommunityUtil.getJSONString(0);
     }
 }

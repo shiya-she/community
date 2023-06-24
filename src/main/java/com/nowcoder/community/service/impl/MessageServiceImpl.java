@@ -3,8 +3,10 @@ package com.nowcoder.community.service.impl;
 import com.nowcoder.community.dao.MessageMapper;
 import com.nowcoder.community.entity.Message;
 import com.nowcoder.community.service.MessageService;
+import com.nowcoder.community.util.SensitiveFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.HtmlUtils;
 
 import java.util.List;
 
@@ -17,7 +19,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MessageServiceImpl implements MessageService {
 
+
     private final MessageMapper messageMapper;
+    private final SensitiveFilter sensitiveFilter;
 
     @Override
     public List<Message> findConversations(int userId, int offset, int limit) {
@@ -43,7 +47,22 @@ public class MessageServiceImpl implements MessageService {
     public int findLetterUnReadCount(int userId, String conversationId) {
         return messageMapper.selectLetterUnReadCount(userId, conversationId);
     }
+
+    @Override
+    public int addNessage(Message message) {
+        message.setStatus(0);
+        message.setContent(HtmlUtils.htmlEscape(message.getContent()));
+        message.setContent(sensitiveFilter.filter(message.getContent()));
+        return messageMapper.insertMessage(message);
+    }
+
+    @Override
+    public int readMessage(List<Integer> ids) {
+        return messageMapper.updateStatus(ids, 1);
+    }
+
 }
+
 
 
 

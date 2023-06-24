@@ -181,6 +181,9 @@ public class UserServiceImpl implements UserService {
         userMapper.updatePassword(user.getId(), newPassword);
         return map;
     }
-
+    @Override
+    public User findUserByName(String name) {
+        return userMapper.selectByName(name);
+    }
 
 }
