@@ -45,4 +45,10 @@ public class HomeController {
         return "/index";
     }
 
+
+    @GetMapping(path = "/error")
+    public String getError() {
+        return "/error/500";
+    }
+
 }

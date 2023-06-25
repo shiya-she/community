@@ -55,6 +55,7 @@ public class MessageController {
 
     @GetMapping(path = "/detail/{conversationId}")
     public String getLetterDetail(@PathVariable("conversationId") String conversationId, Model model, Page page) {
+
         page.setLimit(5);
         page.setPath("/letter/detail/" + conversationId);
         page.setRows(messageService.findLetterCount(conversationId));
