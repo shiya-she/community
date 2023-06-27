@@ -7,6 +7,7 @@ import com.nowcoder.community.entity.User;
 import com.nowcoder.community.service.CommentService;
 import com.nowcoder.community.service.DiscussPostService;
 
+import com.nowcoder.community.service.LikeService;
 import com.nowcoder.community.service.UserService;
 import com.nowcoder.community.util.CommunityConstants;
 import com.nowcoder.community.util.CommunityUtil;
@@ -21,7 +22,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 
-
 /**
  * @author sc
  * @date 2023-06-11下午 10:31
@@ -34,12 +34,14 @@ public class DiscussPostController {
     private final UserService userService;
 
     private final CommentService commentService;
+    private final LikeService likeService;
 
-    public DiscussPostController(DiscussPostService discussPostsService, HostHolder hostHolder, UserService userService, CommentService commentService) {
+    public DiscussPostController(DiscussPostService discussPostsService, HostHolder hostHolder, UserService userService, CommentService commentService, LikeService likeService) {
         this.discussPostsService = discussPostsService;
         this.hostHolder = hostHolder;
         this.userService = userService;
         this.commentService = commentService;
+        this.likeService = likeService;
     }
 
     @PostMapping(path = {"/add"})
@@ -60,10 +62,18 @@ public class DiscussPostController {
     }
 
     @GetMapping(path = "/detail/{discussPostId}")
-    public String getDiscussionPost(@PathVariable("discussPostId") int discussionPostId, Model model, Page page) {
+    public String getDiscussionPost(@PathVariable("discussPostId") int discussionPostId,
+                                    Model model, Page page) {
         //帖子
         DiscussPost post = discussPostsService.findDiscussPostById(discussionPostId);
         model.addAttribute("post", post);
+        //点赞数量
+        long likeCount = likeService.findEntityLikeCount(CommunityConstants.ENTITY_TYPE_POST, discussionPostId);
+        model.addAttribute("likeCount", likeCount);
+        //点赞状态
+        int likeStatus = hostHolder.getUser() == null ? 0 : likeService.findEntityLikeStatus(hostHolder.getUser().getId(),
+                CommunityConstants.ENTITY_TYPE_POST, discussionPostId);
+        model.addAttribute("likeStatus", likeStatus);
         //作者
         User user = userService.findUserById(post.getUserId());
         model.addAttribute("user", user);
@@ -79,9 +89,17 @@ public class DiscussPostController {
 
         List<Map<String, Object>> maps = comments.stream().map(
                 comment -> {
+                    //评论
                     Map<String, Object> outMap = new HashMap<>();
                     outMap.put("comment", comment);
                     outMap.put("user", userService.findUserById(comment.getUserId()));
+                    //点赞数量
+                    long outMapLikeCount = likeService.findEntityLikeCount(CommunityConstants.ENTITY_TYPE_COMMENT, comment.getId());
+                    outMap.put("likeCount", outMapLikeCount);
+                    //点赞状态
+                    long outMapLikeStatus = hostHolder.getUser() == null ? 0 : likeService.findEntityLikeStatus(hostHolder.getUser().getId(),
+                            CommunityConstants.ENTITY_TYPE_COMMENT, comment.getId());
+                    outMap.put("likeStatus", outMapLikeStatus);
                     List<Comment> replyList = Optional.ofNullable(
                                     commentService.findCommentsByEntity(CommunityConstants.ENTITY_TYPE_COMMENT, comment.getId(), 0, Integer.MAX_VALUE)
                             )
@@ -91,12 +109,17 @@ public class DiscussPostController {
                                 Map<String, Object> inMap = new HashMap<>();
                                 inMap.put("reply", reply);
                                 inMap.put("user", userService.findUserById(reply.getUserId()));
+                                long inMapLikeCount = likeService.findEntityLikeCount(CommunityConstants.ENTITY_TYPE_COMMENT, reply.getId());
+                                inMap.put("likeCount", inMapLikeCount);
+                                long inMapLikeStatus = hostHolder.getUser() == null ? 0 : likeService.findEntityLikeStatus(hostHolder.getUser().getId(),
+                                        CommunityConstants.ENTITY_TYPE_COMMENT, reply.getId());
+                                inMap.put("status", inMapLikeStatus);
                                 User target = reply.getTargetId() == 0 ? null : userService.findUserById(reply.getTargetId());
                                 inMap.put("target", target);
                                 return inMap;
                             }
                     ).collect(Collectors.toList());
-                    outMap.put("reply",replyMap);
+                    outMap.put("reply", replyMap);
                     int replyCount = commentService.findCommentCount(CommunityConstants.ENTITY_TYPE_COMMENT, comment.getId());
                     outMap.put("replyCount", replyCount);
                     return outMap;

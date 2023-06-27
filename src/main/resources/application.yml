@@ -37,8 +37,11 @@ spring:
           starttls:
             enable: true
             required: true
-
-
+# RedisProperties
+  redis:
+    host: localhost
+    database: 11
+    port: 6379
 
 logging:
   file:
@@ -59,3 +62,4 @@ community:
   path:
     domain: http://localhost:8080
     upload: E:\work\data\images\community\
+
