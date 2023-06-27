@@ -113,7 +113,7 @@ public class DiscussPostController {
                                 inMap.put("likeCount", inMapLikeCount);
                                 long inMapLikeStatus = hostHolder.getUser() == null ? 0 : likeService.findEntityLikeStatus(hostHolder.getUser().getId(),
                                         CommunityConstants.ENTITY_TYPE_COMMENT, reply.getId());
-                                inMap.put("status", inMapLikeStatus);
+                                inMap.put("likeStatus", inMapLikeStatus);
                                 User target = reply.getTargetId() == 0 ? null : userService.findUserById(reply.getTargetId());
                                 inMap.put("target", target);
                                 return inMap;

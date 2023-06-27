@@ -2,6 +2,7 @@ package com.nowcoder.community.controller;
 
 import com.nowcoder.community.annotation.LoginRequired;
 import com.nowcoder.community.entity.User;
+import com.nowcoder.community.service.LikeService;
 import com.nowcoder.community.service.UserService;
 import com.nowcoder.community.util.CommunityUtil;
 import com.nowcoder.community.util.HostHolder;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,16 +36,20 @@ public class UserController {
 
     private final UserService userService;
     private final HostHolder hostHolder;
+    private final LikeService likeService;
 
-    public UserController(UserService userService, HostHolder hostHolder) {
+    public UserController(UserService userService, HostHolder hostHolder, LikeService likeService) {
         this.userService = userService;
         this.hostHolder = hostHolder;
+        this.likeService = likeService;
     }
+
     @LoginRequired
     @GetMapping(path = "/setting")
     public String getSettingPage() {
         return "/site/setting";
     }
+
     @LoginRequired
     @PostMapping(path = "/upload")
     public String uploadHandler(MultipartFile headerImage, Model model) {
@@ -83,10 +89,10 @@ public class UserController {
     public String changePassword(String oldPassword, String newPassword, Model model) {
         if (StringUtils.equals(oldPassword, newPassword)) {
             model.addAttribute("newPasswordMsg", "新密码不能与旧密码相同！");
-                return "/site/setting";
+            return "/site/setting";
         }
         User user = hostHolder.getUser();
-        if(user==null){
+        if (user == null) {
             model.addAttribute("msg", "您还未登录！");
             model.addAttribute("target", "/index");
             return "/site/operate-result";
@@ -97,6 +103,21 @@ public class UserController {
             return "/site/setting";
         }
         return "redirect:/logout";
+    }
+
+    //个人主页
+    @GetMapping(path = "/profile/{userId}")
+    public String profile(@PathVariable("userId") int userId, Model model) {
+        User user = userService.findUserById(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("userId不存在！");
+        }
+        //用户
+        model.addAttribute("user", user);
+        //点赞数量
+        int likeCount = likeService.findUserLikeCount(user.getId());
+        model.addAttribute("likeCount", likeCount);
+        return "/site/profile";
     }
 }
 
