@@ -1,5 +1,6 @@
 package com.nowcoder.community.controller;
 
+import com.nowcoder.community.annotation.LoginRequired;
 import com.nowcoder.community.entity.Message;
 import com.nowcoder.community.entity.Page;
 import com.nowcoder.community.entity.User;
@@ -28,6 +29,7 @@ public class MessageController {
     private final UserService userService;
 
     @GetMapping("/list")
+    @LoginRequired
     public String getLetterList(Model model, Page page) {
         User user = hostHolder.getUser();
         page.setLimit(5);
@@ -54,8 +56,8 @@ public class MessageController {
     }
 
     @GetMapping(path = "/detail/{conversationId}")
+    @LoginRequired
     public String getLetterDetail(@PathVariable("conversationId") String conversationId, Model model, Page page) {
-
         page.setLimit(5);
         page.setPath("/letter/detail/" + conversationId);
         page.setRows(messageService.findLetterCount(conversationId));
@@ -100,6 +102,7 @@ public class MessageController {
 
     @PostMapping(path = "/send")
     @ResponseBody
+    @LoginRequired
     public String sendLetter(String toName, String content) {
         User target = userService.findUserByName(toName);
         if (target == null) {

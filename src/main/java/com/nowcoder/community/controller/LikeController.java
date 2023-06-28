@@ -24,8 +24,8 @@ public class LikeController {
     private final HostHolder hostHolder;
 
     @PostMapping(path = "/like")
-    @ResponseBody
     @LoginRequired
+    @ResponseBody
     public String like(int entityType, int entityId,int entityUserId) {
         User user = hostHolder.getUser();
         likeService.like(user.getId(), entityType, entityId,entityUserId);

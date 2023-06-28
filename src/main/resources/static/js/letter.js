@@ -15,14 +15,29 @@ function send_letter() {
         },
         function (data) {
             data = $.parseJSON(data);
-            if (data.code === 0) {
-                $("#hintBody").text("发送成功!");
-            } else {
-                $("#hintBody").text(data.msg);
-            }
+            var codeHandlers = {
+                0: function () {
+                    $("#hintBody").text("发送成功!");
+                },
+                401: function () {
+                    $("#hintBody").text(data.msg);
+                },
+                1: function () {
+                    $("#hintBody").text(data.msg);
+                },
+                default: function () {
+                    $("#hintBody").text("网站异常，请联系客服！");
+                }
+            };
+            var code = data.code;
+            var handler = codeHandlers[code] || $("#hintBody").text(data.msg);
+            handler();
             $("#hintModal").modal("show");
             setTimeout(function () {
-                $("#hintModal").modal("hide");
+                if (code === 401) {
+                    window.location.href = CONTEXT_PATH + data.url;
+                    return; // 提前结束函数执行
+                }
                 location.reload();
             }, 5000);
         }
