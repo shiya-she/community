@@ -2,8 +2,10 @@ package com.nowcoder.community.controller;
 
 import com.nowcoder.community.annotation.LoginRequired;
 import com.nowcoder.community.entity.User;
+import com.nowcoder.community.service.FollowService;
 import com.nowcoder.community.service.LikeService;
 import com.nowcoder.community.service.UserService;
+import com.nowcoder.community.util.CommunityConstants;
 import com.nowcoder.community.util.CommunityUtil;
 import com.nowcoder.community.util.HostHolder;
 import org.apache.commons.lang3.StringUtils;
@@ -37,11 +39,13 @@ public class UserController {
     private final UserService userService;
     private final HostHolder hostHolder;
     private final LikeService likeService;
+    private final FollowService followService;
 
-    public UserController(UserService userService, HostHolder hostHolder, LikeService likeService) {
+    public UserController(UserService userService, HostHolder hostHolder, LikeService likeService, FollowService followService) {
         this.userService = userService;
         this.hostHolder = hostHolder;
         this.likeService = likeService;
+        this.followService = followService;
     }
 
     @LoginRequired
@@ -117,6 +121,16 @@ public class UserController {
         //点赞数量
         int likeCount = likeService.findUserLikeCount(user.getId());
         model.addAttribute("likeCount", likeCount);
+        //关注数量
+        long followeeCount = followService.findFolloweeCount(user.getId(), CommunityConstants.ENTITY_TYPE_USER);
+        model.addAttribute("followeeCount", followeeCount);
+        long followerCount = followService.findFollowerCount(CommunityConstants.ENTITY_TYPE_USER, user.getId());
+        model.addAttribute("followerCount", followerCount);
+        Optional<User> userOptional = Optional.ofNullable(hostHolder.getUser());
+        boolean hasFollowed = userOptional
+                .map(user1 -> followService.hasFollowed(user1.getId(), CommunityConstants.ENTITY_TYPE_USER, userId))
+                .orElse(false);
+        model.addAttribute("hasFollowed", hasFollowed);
         return "/site/profile";
     }
 }
