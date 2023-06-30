@@ -1,5 +1,8 @@
 package com.nowcoder.community.service;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author sc
  * @date 2023-06-27下午 10:25
@@ -14,4 +17,8 @@ public interface FollowService {
     long findFollowerCount(int entityType, int entityId);
 
     boolean hasFollowed(int userId, int entityType, int entityId);
+
+    List<Map<String ,Object>> findFollowees(int userId, int offset, int limit);
+
+    List<Map<String, Object>> findFollowers(int userId, int offset, int limit);
 }
