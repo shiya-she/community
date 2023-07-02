@@ -59,4 +59,8 @@ public class CommunityConstants {
      * 实体类型:用户
      */
     public static final int ENTITY_TYPE_USER = 3;
+    /**
+     * 记住忘记密码验证码的生存时间单位minute
+     */
+    public static final int USER_FORGET = 10;
 }

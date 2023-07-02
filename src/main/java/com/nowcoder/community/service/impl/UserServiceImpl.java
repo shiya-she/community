@@ -8,24 +8,26 @@ import com.nowcoder.community.service.UserService;
 import com.nowcoder.community.util.CommunityConstants;
 import com.nowcoder.community.util.CommunityUtil;
 import com.nowcoder.community.util.MailClient;
+import com.nowcoder.community.util.RedisKeyUtil;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final MailClient mailClient;
     private final LoginTicketMapper loginTicketMapper;
 
-    public UserServiceImpl(UserMapper userMapper, MailClient mailClient, LoginTicketMapper loginTicketMapper) {
-        this.userMapper = userMapper;
-        this.mailClient = mailClient;
-        this.loginTicketMapper = loginTicketMapper;
-    }
+    private final RedisTemplate redisTemplate;
+
 
     @Override
     public User findUserById(int id) {
@@ -181,9 +183,45 @@ public class UserServiceImpl implements UserService {
         userMapper.updatePassword(user.getId(), newPassword);
         return map;
     }
+
     @Override
     public User findUserByName(String name) {
         return userMapper.selectByName(name);
+    }
+
+    @Override
+    public User findUserByEmail(String email) {
+        return userMapper.selectByEmail(email);
+    }
+
+    @Override
+    public void forgetCode(int userId, String email, String code, int minutes) {
+        String userForgetKey = RedisKeyUtil.getUserForgetKey(userId);
+        mailClient.forgetMail(email, code, minutes);
+        redisTemplate.opsForValue().set(userForgetKey, code, Duration.ofMinutes(minutes));
+    }
+
+    @Override
+    public Map<String, Object> resetPassword(String email, String code, String password) {
+        User user = findUserByEmail(email);
+        Map<String, Object> map = new HashMap<>();
+        if (user == null) {
+            map.put("emailMsg", "email输入有误！");
+            return  map;
+        }
+        String userForgetKey = RedisKeyUtil.getUserForgetKey(user.getId());
+        String code1 = (String) redisTemplate.opsForValue().get(userForgetKey);
+        if (code1 == null) {
+            map.put("emailMsg", "请重新获取验证码！");
+            return  map;
+        }
+        if (!code.equals(code1)) {
+            map.put("codeMsg", "请输入正确的验证码");
+            return  map;
+        }
+        password = CommunityUtil.md5(password + user.getSalt());
+        userMapper.updatePassword(user.getId(), password);
+        return map;
     }
 
 }

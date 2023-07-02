@@ -68,5 +68,14 @@ public class MailClient {
         return sendMail(user.getEmail(), "激活账号", content);
     }
 
+    public Boolean forgetMail(String email, String code, int minutes) {
+        Context context = new Context();
+        context.setVariable("email", email);
+        context.setVariable("code", code);
+        context.setVariable("minutes", minutes);
+        String process = templateEngine.process("/mail/forget", context);
+        return sendMail(email, "忘记密码", process);
+
+    }
 
 }

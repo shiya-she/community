@@ -11,6 +11,7 @@ public class RedisKeyUtil {
 
     private static final String PREFIX_FOLLOWEE = "followee";
     private static final String PREFIX_FOLLOWER = "follower";
+    private static final String PREFIX_USER_FORGET = "forget:user";
 
     private RedisKeyUtil() {
     }
@@ -31,10 +32,15 @@ public class RedisKeyUtil {
     public static String getFolloweeKey(int userId, int entityType) {
         return PREFIX_FOLLOWEE + SPLIT + userId + SPLIT + entityType;
     }
+
     //某个实体拥有的粉丝
     //follower:entityType:entityId->zset(userId,now)
-
     public static String getFollowerKey(int entityType, int entityId) {
         return PREFIX_FOLLOWER + SPLIT + entityType + SPLIT + entityId;
+    }
+
+    //某个用户忘记密码的code
+    public static String getUserForgetKey(int userId) {
+        return PREFIX_USER_FORGET + SPLIT + userId;
     }
 }

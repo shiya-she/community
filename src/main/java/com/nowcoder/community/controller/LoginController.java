@@ -5,16 +5,15 @@ import com.nowcoder.community.annotation.LoginRequired;
 import com.nowcoder.community.entity.User;
 import com.nowcoder.community.service.UserService;
 import com.nowcoder.community.util.CommunityConstants;
+import com.nowcoder.community.util.CommunityUtil;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.Cookie;
@@ -23,21 +22,21 @@ import javax.servlet.http.HttpSession;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
+
 import java.util.Map;
 
+
 @Controller
+@RequiredArgsConstructor
 public class LoginController {
     private final UserService userService;
     private final Producer kaptchaProducer;
+
     private static final Logger logger = LoggerFactory.getLogger(LoginController.class);
 
     @Value("${server.servlet.context-path}")
     private String contextPath;
 
-    public LoginController(UserService userService, Producer producer) {
-        this.userService = userService;
-        this.kaptchaProducer = producer;
-    }
 
     @GetMapping(path = "/register")
     public String getRegisteredPage() {
@@ -45,9 +44,10 @@ public class LoginController {
     }
 
     @GetMapping(path = "/login")
-    public String getLoginPage(@CookieValue(name = "ticket", required = false, defaultValue = "") String ticket, Model model) {
+    public String getLoginPage() {
         return "/site/login";
     }
+
 
     @PostMapping(path = "/register")
     public String register(Model model, User user) {
@@ -124,11 +124,43 @@ public class LoginController {
             return "/site/login";
         }
     }
+
     @LoginRequired
     @GetMapping(path = "/logout")
     public String logout(@CookieValue("ticket") String ticket) {
         userService.logout(ticket);
         return "redirect:/login";
+    }
+
+    @GetMapping(path = "/forget")
+    public String getForgetPage() {
+        return "/site/forget";
+
+    }
+
+    @GetMapping(path = "/forgetCode/{email}")
+    @ResponseBody
+    public String getCode(@PathVariable("email") String email) {
+        User user = userService.findUserByEmail(email);
+        if (user == null) {
+            return CommunityUtil.getJSONString(404, "未找到" + email + "用户");
+        }
+        String code = kaptchaProducer.createText();
+        userService.forgetCode(user.getId(), email, code, CommunityConstants.USER_FORGET);
+        return CommunityUtil.getJSONString(200);
+    }
+
+
+    @PostMapping(path = "/forget")
+    public String forget(String email, String code, String password, Model model) {
+        Map<String, Object> map = userService.resetPassword(email, code, password);
+        if (map.size() > 0) {
+            model.addAllAttributes(map);
+            return "/site/forget";
+        }
+        model.addAttribute("msg", "你的账号" + email + "密码已经修改完毕！请登录！");
+        model.addAttribute("target", "/login");
+        return "/site/operate-result";
     }
 
 }

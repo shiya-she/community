@@ -10,8 +10,6 @@ import java.util.Map;
 public interface UserService {
 
 
-
-
     User findUserById(int id);
 
     Map<String, Object> register(User user);
@@ -25,7 +23,7 @@ public interface UserService {
 
     boolean checkLoginStatus(String ticket);
 
-    LoginTicket findLoginTicket(String ticket) ;
+    LoginTicket findLoginTicket(String ticket);
 
 
     int updateHeader(int userId, String headerUrl);
@@ -35,4 +33,11 @@ public interface UserService {
 
 
     User findUserByName(String name);
+
+    User findUserByEmail(String email);
+
+
+    void forgetCode(int userId, String email, String code, int minutes);
+
+    Map<String,Object> resetPassword(String email, String code, String password);
 }
