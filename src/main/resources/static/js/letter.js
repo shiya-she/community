@@ -46,6 +46,24 @@ function send_letter() {
 }
 
 function delete_msg() {
-    // TODO 删除数据
-    $(this).parents(".media").remove();
+    var messageId=$(this).val();
+    var that=this;
+    $.post(
+        CONTEXT_PATH+"/letter/del",
+        {
+            "messageId":messageId,
+        },
+        function(data) {
+            data=$.parseJSON(data);
+            if (data.code ===200){
+                // TODO 删除数据
+                $(that).parents(".media").remove();
+                alert(data.msg);
+            }else{
+                alert(data.msg);
+            }
+
+        }
+    );
+
 }

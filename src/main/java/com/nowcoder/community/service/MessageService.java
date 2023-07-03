@@ -26,4 +26,8 @@ public interface MessageService{
 
 
     int readMessage(List<Integer> ids);
+
+    int deleteMessage(Integer id);
+
+    Message findMessageById(Integer id);
 }

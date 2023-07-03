@@ -121,4 +121,16 @@ public class MessageController {
         messageService.addNessage(message);
         return CommunityUtil.getJSONString(0);
     }
+    @PostMapping(path = "/del")
+    @LoginRequired
+    @ResponseBody
+    public  String deleteMessage(int messageId){
+        User user = hostHolder.getUser();
+        Message message = messageService.findMessageById(messageId);
+        if (user .getId()!=message.getFromId()){
+            return CommunityUtil.getJSONString(401,"无法删除此私信！");
+        }
+        messageService.deleteMessage(messageId);
+        return CommunityUtil.getJSONString(200,"删除成功!");
+    }
 }

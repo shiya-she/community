@@ -2,6 +2,7 @@ package com.nowcoder.community.dao;
 
 import com.nowcoder.community.entity.Message;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -25,4 +26,7 @@ public interface MessageMapper {
     int insertMessage(Message message);
     //
     int updateStatus(List<Integer> ids,int status);
+    @Select({"select id,from_id,to_id,conversation_id,content,status,create_time",
+            "from message where id =#{id}"})
+    Message findMessageById(Integer id);
 }

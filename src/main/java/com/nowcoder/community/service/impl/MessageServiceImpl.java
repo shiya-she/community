@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.HtmlUtils;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -61,6 +62,14 @@ public class MessageServiceImpl implements MessageService {
         return messageMapper.updateStatus(ids, 1);
     }
 
+    @Override
+    public int deleteMessage(Integer id) {
+        return messageMapper.updateStatus(Collections.singletonList(id), 2);
+    }
+    @Override
+    public Message findMessageById(Integer id) {
+        return messageMapper.findMessageById(id);
+    }
 }
 
 
