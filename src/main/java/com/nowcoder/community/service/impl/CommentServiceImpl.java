@@ -6,6 +6,7 @@ import com.nowcoder.community.service.CommentService;
 import com.nowcoder.community.service.DiscussPostService;
 import com.nowcoder.community.util.CommunityConstants;
 import com.nowcoder.community.util.SensitiveFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -19,16 +20,13 @@ import java.util.List;
  * @date 2023-06-13上午 12:09
  */
 @Service
+@RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
     private final DiscussPostService discussPostService;
     private final SensitiveFilter sensitiveFilter;
 
-    public CommentServiceImpl(CommentMapper commentMapper, DiscussPostService discussPostService, SensitiveFilter sensitiveFilter) {
-        this.commentMapper = commentMapper;
-        this.discussPostService = discussPostService;
-        this.sensitiveFilter = sensitiveFilter;
-    }
+
 
     @Override
     public List<Comment> findCommentsByEntity(int entityType, int entityId, int offset, int limit) {
@@ -57,5 +55,13 @@ public class CommentServiceImpl implements CommentService {
         }
 
         return rows;
+    }
+    @Override
+    public int findCommentCountByUserId(int entityType, int userId) {
+        return commentMapper.selectCountByUserId(entityType, userId);
+    }
+    @Override
+    public List<Comment> findCommentsByUserId(int entityType, int userId, int offset, int limit) {
+        return commentMapper.selectCommentsByUserId(entityType,userId,offset,limit);
     }
 }

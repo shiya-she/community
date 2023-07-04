@@ -46,6 +46,7 @@ public class DiscussPostServiceImpl implements DiscussPostService {
 
     @Override
     public DiscussPost findDiscussPostById(int id) {
+
         return discussPostMapper.selectDiscussPostById(id);
     }
     @Override

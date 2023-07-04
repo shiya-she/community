@@ -25,6 +25,20 @@
         and entity_type =#{entityType}
         and entity_id=#{entityId}
     </select>
+    <select id="selectCommentsByUserId" resultType="Comment">
+        select
+        <include refid="selectFields"/>
+        from comment
+        where entity_type =#{entityType}
+        and user_id =#{userId}
+        order by create_time asc
+        limit #{offset},#{limit}
+    </select>
+    <select id="selectCountByUserId" resultType="java.lang.Integer">
+        select count(id) from comment
+        where  entity_type =#{entityType}
+        and user_id=#{userId}
+    </select>
     <insert id="insertComment" keyProperty="id" parameterType="Comment">
         insert into comment
         (<include refid="insertFields"/>)

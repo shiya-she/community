@@ -1,13 +1,15 @@
 package com.nowcoder.community.controller;
 
 import com.nowcoder.community.annotation.LoginRequired;
+import com.nowcoder.community.entity.Comment;
+import com.nowcoder.community.entity.DiscussPost;
+import com.nowcoder.community.entity.Page;
 import com.nowcoder.community.entity.User;
-import com.nowcoder.community.service.FollowService;
-import com.nowcoder.community.service.LikeService;
-import com.nowcoder.community.service.UserService;
+import com.nowcoder.community.service.*;
 import com.nowcoder.community.util.CommunityConstants;
 import com.nowcoder.community.util.CommunityUtil;
 import com.nowcoder.community.util.HostHolder;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,10 +24,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Controller
+@RequiredArgsConstructor
 @RequestMapping(path = "/user")
 public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
@@ -40,13 +46,8 @@ public class UserController {
     private final HostHolder hostHolder;
     private final LikeService likeService;
     private final FollowService followService;
-
-    public UserController(UserService userService, HostHolder hostHolder, LikeService likeService, FollowService followService) {
-        this.userService = userService;
-        this.hostHolder = hostHolder;
-        this.likeService = likeService;
-        this.followService = followService;
-    }
+    private final DiscussPostService discussPostService;
+    private final CommentService commentService;
 
     @LoginRequired
     @GetMapping(path = "/setting")
@@ -132,6 +133,57 @@ public class UserController {
                 .orElse(false);
         model.addAttribute("hasFollowed", hasFollowed);
         return "/site/profile";
+    }
+
+    @GetMapping(path = "/my-post")
+    @LoginRequired
+    public String myPost(Model model, Page page) {
+        User user = hostHolder.getUser();
+        int rows = discussPostService.findDiscussPostRows(user.getId());
+        page.setLimit(10);
+        page.setPath("/user/my-post");
+        page.setRows(rows);
+        List<DiscussPost> discussPosts = discussPostService.findDiscussPosts(user.getId(), page.getOffset(), page.getLimit());
+        List<Map<String, Object>> maps = Optional.ofNullable(discussPosts)
+                .stream()
+                .flatMap(List::stream)
+                .map(post -> {
+                    Map<String, Object> map = new HashMap<>();
+                    long likeCount = likeService.findEntityLikeCount(CommunityConstants.ENTITY_TYPE_POST, post.getId());
+                    map.put("post", post);
+                    map.put("likeCount", likeCount);
+                    return map;
+                })
+                .collect(Collectors.toList());
+        model.addAttribute("rows", rows);
+        model.addAttribute("discussPosts", maps);
+        return "/site/my-post";
+    }
+
+    @GetMapping(path = "/my-reply")
+    @LoginRequired
+    public String myReply(Model model, Page page) {
+        User user = hostHolder.getUser();
+        int rows = commentService.findCommentCountByUserId(CommunityConstants.ENTITY_TYPE_POST,user.getId());
+        page.setLimit(10);
+        page.setPath("/user/my-reply");
+        page.setRows(rows);
+        List<Comment> comments = commentService.findCommentsByUserId(CommunityConstants.ENTITY_TYPE_POST, user.getId(), page.getOffset(), page.getLimit());
+        List<Map<String, Object>> maps = Optional.ofNullable(comments)
+                .stream()
+                .flatMap(List::stream)
+                .map(comment -> {
+                    Map<String, Object> map = new HashMap<>();
+                    DiscussPost post = discussPostService.findDiscussPostById(comment.getEntityId());
+                    map.put("postId", post.getId());
+                    map.put("postTitle", post.getTitle());
+                    map.put("comment", comment);
+                    return map;
+                })
+                .collect(Collectors.toList());
+        model.addAttribute("rows",rows);
+        model.addAttribute("comments",maps);
+        return "/site/my-reply";
     }
 }
 
