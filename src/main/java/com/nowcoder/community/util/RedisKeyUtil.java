@@ -12,6 +12,9 @@ public class RedisKeyUtil {
     private static final String PREFIX_FOLLOWEE = "followee";
     private static final String PREFIX_FOLLOWER = "follower";
     private static final String PREFIX_USER_FORGET = "forget:user";
+    private static final String PREFIX_KAPTCHA = "kaptcha";
+    private static final String PREFIX_TICKET = "ticket";
+    private static final String PREFIX_USER = "user";
 
     private RedisKeyUtil() {
     }
@@ -42,5 +45,20 @@ public class RedisKeyUtil {
     //某个用户忘记密码的code
     public static String getUserForgetKey(int userId) {
         return PREFIX_USER_FORGET + SPLIT + userId;
+    }
+
+    //登录验证码
+    public static String getKaptchaKey(String owner) {
+        return PREFIX_KAPTCHA + SPLIT + owner;
+    }
+
+    //登录凭证
+    public static String getTicket(String ticket) {
+        return PREFIX_TICKET + SPLIT + ticket;
+    }
+
+    //用户
+    public static String getUserKey(int userId) {
+        return PREFIX_USER + SPLIT + userId;
     }
 }

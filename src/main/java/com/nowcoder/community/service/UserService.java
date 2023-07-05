@@ -21,8 +21,6 @@ public interface UserService {
 
     void logout(String ticket);
 
-    boolean checkLoginStatus(String ticket);
-
     LoginTicket findLoginTicket(String ticket);
 
 
